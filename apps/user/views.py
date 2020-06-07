@@ -153,9 +153,11 @@ class UserInfoView(LoginRequiredMixin, View):
     def get(self, request):
         # request.user.is_authenticated()
         # 获取用户个人信息
+        user = request.user
+        address = Address.objects.get_default_address(user)
         # 获取用户最近浏览
         # 除了你给模板文件传递模板变量之外,django会把request.user也传给模板文件
-        return render(request, 'user_center_info.html', {'page': 'user'})
+        return render(request, 'user_center_info.html', {'page': 'user', 'address': address})
 
 
 class UserOrderView(LoginRequiredMixin, View):
