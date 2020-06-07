@@ -152,3 +152,21 @@ EMAIL_HOST_USER = 'chris_guoc@163.com'
 EMAIL_HOST_PASSWORD = 'XFNNSUJCHAHMPCIW'
 # 收件人看到的发件人
 EMAIL_FROM = 'Python-django<chris_guoc@163.com>'
+
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": "redis://192.168.1.105:6379/1",
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+        }
+    }
+}
+
+
+# The configuration of the session
+SESSION_ENGINE = "django.contrib.sessions.backends.cache"
+SESSION_CACHE_ALIAS = "default"
+
+# Users center under the condition of the login to access
+LOGIN_URL = '/user/login'

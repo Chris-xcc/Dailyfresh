@@ -2,97 +2,17 @@
 # coding: utf-8
 from django.shortcuts import render, redirect, reverse
 from django.views.generic import View
-from .models import User
+from .models import User, Address
 from django.http import HttpResponse
 from django.conf import settings
+from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.decorators import login_required
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 from itsdangerous import SignatureExpired
 from django.core.mail import send_mail
 from celery_tasks.tasks import send_register_active_email
+from utils.mixin import LoginRequiredMixin
 import re
-
-
-# Create your views here.
-
-# /user/register
-# def register(request):
-#     # 注册
-#     if request.method == 'GET':
-#         # 显示注册页面
-#         return render(request, 'register.html')
-#     else:
-#         # 进行注册处理
-#         # 接收数据
-#         username = request.POST.get('user_name')
-#         password = request.POST.get('pwd')
-#         email = request.POST.get('email')
-#         allow = request.POST.get('allow')
-#         # 进行数据校验
-#         if not all([username, password, email]):
-#             # 数据不完整
-#             return render(request, 'register.html', {'errmsg': '数据不完整'})
-#
-#         # 校验邮箱
-#         if not re.match(r'^[a-zA-Z0-9_-]+@[a-zA-Z0-9_-]+(\.[a-zA-Z0-9_-]+)+$', email):
-#             return render(request, 'register.html', {'errmsg': '邮箱格式不正确'})
-#
-#         if allow != 'on':
-#             # 是否同意协议
-#             return render(request, 'register.html', {'errmsg': '请同意协议'})
-#
-#         # 校验用户名是否重复
-#         try:
-#             user = User.objects.get(username=username)
-#         except User.DoesNotExist:
-#             # 用户名不存在
-#             user = None
-#         if user:
-#             # 用户名已存在
-#             return render(request, 'register.html', {'errmsg': '用户名已存在'})
-#         # 进行业务处理:进行用户注册
-#         user = User.objects.create_user(username, email, password)
-#         user.is_active = 0
-#         user.save()
-#         # 返回应答,跳转到首页
-#         return redirect(reverse('goods:index'))
-#
-#
-# def register_handle(request):
-#     # 进行注册处理
-#     # 接收数据
-#     username = request.POST.get('user_name')
-#     password = request.POST.get('pwd')
-#     email = request.POST.get('email')
-#     allow = request.POST.get('allow')
-#     # 进行数据校验
-#     if not all([username, password, email]):
-#         # 数据不完整
-#         return render(request, 'register.html', {'errmsg': '数据不完整'})
-#
-#     # 校验邮箱
-#     if not re.match(r'^[a-zA-Z0-9_-]+@[a-zA-Z0-9_-]+(\.[a-zA-Z0-9_-]+)+$', email):
-#         return render(request, 'register.html', {'errmsg': '邮箱格式不正确'})
-#
-#     if allow != 'on':
-#         # 是否同意协议
-#         return render(request, 'register.html', {'errmsg': '请同意协议'})
-#
-#     # 校验用户名是否重复
-#     try:
-#         user = User.objects.get(username=username)
-#     except User.DoesNotExist:
-#         # 用户名不存在
-#         user = None
-#     if user:
-#         # 用户名已存在
-#         return render(request, 'register.html', {'errmsg': '用户名已存在'})
-#     # 进行业务处理:进行用户注册
-#     user = User.objects.create_user(username, email, password)
-#     user.is_active = 0
-#     user.save()
-#
-#     # 返回应答,跳转到首页
-#     return redirect(reverse('goods:index'))
 
 
 class RegisterView(View):
@@ -141,7 +61,8 @@ class RegisterView(View):
         info = {'confirm': user.id}
         token = serializer.dumps(info)
         token = token.decode('utf8')
-        # 发邮件
+        # 发邮件 -> redis来完成
+        # Ubuntu终端命令:进入到项目所在位置, celery -A celery_tasks.tasks worker -l info
         send_register_active_email.delay(email, username, token)
         # 返回应答,跳转到首页
         return redirect(reverse('goods:index'))
@@ -172,4 +93,118 @@ class ActiveView(View):
 class LoginView(View):
     def get(self, request):
         # 显示登录页面
-        return render(request, 'login.html')
+        # 判断是否记住用户名
+        if 'username' in request.COOKIES:
+            username = request.COOKIES.get('username')
+            checked = 'checked'
+        else:
+            username = ''
+            checked = ''
+        return render(request, 'login.html', {'username': username, 'checked': checked})
+
+    def post(self, request):
+        # 登录校验
+
+        # 接收数据
+        username = request.POST.get('username')
+        password = request.POST.get('pwd')
+        # 校验数据
+        if not all([username, password]):
+            return render(request, 'login.html', {'errmsg': '数据不完整'})
+        # 业务处理:
+        user = authenticate(username=username, password=password)
+        if user is not None:
+            # 用户名密码正确
+            if user.is_active:
+                # 用户已激活
+                # 记录用户登录状态
+                login(request, user)
+
+                # 获取登录后所要跳转到的地址
+                # 默认跳转到首页
+                next_url = request.GET.get('next', reverse('goods:index'))
+
+                # 跳转到next_url
+                response = redirect(next_url)
+
+                # 判断是否需要记住用户名
+                remember = request.POST.get('remember')
+                if remember == 'on':
+                    response.set_cookie('username', username, max_age=7 * 24 * 3600)
+                else:
+                    response.delete_cookie('username')
+
+                return response
+            else:
+                # 用户未激活
+                return render(request, 'login.html', {'errmsg': '账户未激活'})
+        else:
+            return render(request, 'login.html', {'errmsg': '用户名或密码错误'})
+
+
+class LogoutView(View):
+    def get(self, requesst):
+        logout(requesst)
+        return redirect(reverse('goods:index'))
+
+
+class UserInfoView(LoginRequiredMixin, View):
+    # 用户信息
+    def get(self, request):
+        # request.user.is_authenticated()
+        # 获取用户个人信息
+        # 获取用户最近浏览
+        # 除了你给模板文件传递模板变量之外,django会把request.user也传给模板文件
+        return render(request, 'user_center_info.html', {'page': 'user'})
+
+
+class UserOrderView(LoginRequiredMixin, View):
+    # 用户订单
+    def get(self, request):
+        # 获取用户订单
+        return render(request, 'user_center_order.html', {'page': 'order'})
+
+
+class AddressView(LoginRequiredMixin, View):
+    # 用户地址
+    def get(self, request):
+        # 获取用户的默认收货地址
+        user = request.user
+        try:
+            address = Address.objects.get(user=user, is_default=True)
+        except Address.DoesNotExist:
+            address = None
+
+        return render(request, 'user_center_site.html', {'page': 'address', 'address': address})
+
+    def post(self, request):
+        # 地址添加
+
+        # 接收数据
+        receiver = request.POST.get('receiver')
+        addr = request.POST.get('addr')
+        zip_code = request.POST.get('zip_code')
+        phone = request.POST.get('phone')
+
+        # 校验数据
+        if not all([addr, receiver, phone]):
+            return render(request, 'user_center_site.html', {'errmsg': '数据不完整'})
+
+        if not re.match(r'^1[3|4|5|7|8][0-9]{9}$', phone):
+            return render(request, 'user_center_site.html', {'errmsg': '手机号码不正确'})
+
+        # 业务处理:地址添加
+        # 获取登录用户对应的User对象
+        user = request.user
+        try:
+            address = Address.objects.get(user=user, is_default=True)
+        except Address.DoesNotExist:
+            address = None
+        if address:
+            is_default = False
+        else:
+            is_default = True
+        Address.objects.create(user=user, addr=addr, receiver=receiver,
+                               zip_code=zip_code, phone=phone, is_default=is_default)
+        # 返回应答
+        return redirect(reverse('user:address'))
