@@ -170,3 +170,4 @@ SESSION_CACHE_ALIAS = "default"
 
 # Users center under the condition of the login to access
 LOGIN_URL = '/user/login'
+#
