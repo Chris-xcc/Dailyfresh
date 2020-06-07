@@ -153,6 +153,7 @@ EMAIL_HOST_PASSWORD = 'XFNNSUJCHAHMPCIW'
 # 收件人看到的发件人
 EMAIL_FROM = 'Python-django<chris_guoc@163.com>'
 
+# Django的缓存配置
 CACHES = {
     "default": {
         "BACKEND": "django_redis.cache.RedisCache",
@@ -164,9 +165,9 @@ CACHES = {
 }
 
 
-# The configuration of the session
+# 配置session存储
 SESSION_ENGINE = "django.contrib.sessions.backends.cache"
 SESSION_CACHE_ALIAS = "default"
 
-# Users center under the condition of the login to access
+# 配置登录url地址
 LOGIN_URL = '/user/login'
