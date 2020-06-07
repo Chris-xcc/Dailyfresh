@@ -17,7 +17,14 @@ class AddressManager(models.Manager):
     # 1.改变原有的查询结果集:all()
     # 2.封装方法:用户操作模型类对应的数据表(增删改查)
     def get_default_address(self, user):
-        pass
+        # 获取用户默认地址
+        # self.model: 获取self对象所在的模型类
+        try:
+            address = self.get(user=user, is_default=True)
+        except self.model.DoesNotExist:
+            address = None
+
+        return address
 
 
 class Address(BaseModel):
