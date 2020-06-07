@@ -10,8 +10,10 @@ from django.contrib.auth.decorators import login_required
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 from itsdangerous import SignatureExpired
 from django.core.mail import send_mail
+from django_redis import get_redis_connection
 from celery_tasks.tasks import send_register_active_email
 from utils.mixin import LoginRequiredMixin
+from ..goods.models import GoodsSKU
 import re
 
 
@@ -156,8 +158,31 @@ class UserInfoView(LoginRequiredMixin, View):
         user = request.user
         address = Address.objects.get_default_address(user)
         # 获取用户最近浏览
+        # from redis import StrictRedis
+        # sr = StrictRedis(host='192.168.1.105', port='6379', db=9)
+        con = get_redis_connection('default')
+
+        history_key = 'history_{}'.format(user.id)
+
+        # 获取用户最新浏览的5个商品的id
+        sku_ids = con.lrange(history_key, 0, 4)
+
+        # 从数据库中查询用户浏览的商品的具体信息
+        # goods_li = GoodsSKU.objects.filter(id__in=sku_ids)
+
+        goods_li = []
+        for iD in sku_ids:
+            goods = GoodsSKU.objects.filter(id=iD)
+            goods_li.append(goods)
+
+        context = {
+            'page': 'user',
+            'address': address,
+            'goods_li': goods_li
+        }
+
         # 除了你给模板文件传递模板变量之外,django会把request.user也传给模板文件
-        return render(request, 'user_center_info.html', {'page': 'user', 'address': address})
+        return render(request, 'user_center_info.html', context=context)
 
 
 class UserOrderView(LoginRequiredMixin, View):
