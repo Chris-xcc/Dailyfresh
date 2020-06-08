@@ -9,7 +9,7 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'dailyfresh.settings')
 django.setup()
 
 # 创建应该Celery实例
-app = Celery('celery_tasks.tasks', broker='redis://192.168.1.105:6379/8')
+app = Celery('celery_tasks.tasks', broker='redis://192.168.1.104:6379/8')
 
 
 #

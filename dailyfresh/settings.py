@@ -157,7 +157,7 @@ EMAIL_FROM = 'Python-django<chris_guoc@163.com>'
 CACHES = {
     "default": {
         "BACKEND": "django_redis.cache.RedisCache",
-        "LOCATION": "redis://192.168.1.105:6379/9",
+        "LOCATION": "redis://192.168.1.104:6379/9",
         "OPTIONS": {
             "CLIENT_CLASS": "django_redis.client.DefaultClient",
         }
