@@ -4,14 +4,15 @@ from django.conf import settings
 from django.core.mail import send_mail
 from django_redis import get_redis_connection
 from django.template import loader, RequestContext
-from apps.goods.models import GoodsType, IndexGoodsBanner, IndexPromotionBanner, IndexTypeGoodsBanner
 
-# 在任务处理者一端2加上下面4局
+# 在任务处理者一端2加上下面5句
 import django
 import os
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'dailyfresh.settings')
 django.setup()
+
+from apps.goods.models import GoodsType, IndexGoodsBanner, IndexPromotionBanner, IndexTypeGoodsBanner
 
 # 创建应该Celery实例
 app = Celery('celery_tasks.tasks', broker='redis://192.168.1.104:6379/8')
