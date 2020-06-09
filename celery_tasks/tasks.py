@@ -36,7 +36,7 @@ def send_register_active_email(to_email, username, token):
 
 
 @app.task
-def generate_static_html():
+def generate_static_index_html():
     # 产生首页静态页面
     # 获取商品的种类信息
     types = GoodsType.objects.all()
