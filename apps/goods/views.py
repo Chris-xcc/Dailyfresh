@@ -1,8 +1,8 @@
 from django.shortcuts import render
+from django.views.generic import View
 
 
-# Create your views here.
 # http://127.0.0.1:8000
-def index(request):
-    # 首页
-    return render(request, 'index.html')
+class IndexView(View):
+    def get(self, request):
+        return render(request, 'index.html')
