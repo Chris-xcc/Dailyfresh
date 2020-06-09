@@ -1,6 +1,7 @@
 from django.shortcuts import render
 from django.views.generic import View
 from .models import GoodsType, IndexGoodsBanner, IndexPromotionBanner, IndexTypeGoodsBanner
+from django_redis import get_redis_connection
 
 
 # http://127.0.0.1:8000
@@ -27,7 +28,13 @@ class IndexView(View):
             type.title_banners = title_banners
 
         # 获取用户购物车商品的数目
-        cart_count = 0
+        user = request.user
+        if user.is_authenticated:
+            con = get_redis_connection('default')
+            cart_key = 'cart_{}'.format(user.id)
+            cart_count = con.hlen(cart_key)
+        else:
+            cart_count = 0
 
         # 组织模板上下文
         context = {
