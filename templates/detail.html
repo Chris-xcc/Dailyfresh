@@ -28,6 +28,14 @@
                     <a href="javascript:;" class="minus fr">-</a>
                 </div>
             </div>
+            <div>
+                <p>其他规格:</p>
+                <ul>
+                    {% for sku in same_spu_skus %}
+                        <li><a href="{% url 'goods:detail' sku.id %}">{{ sku.name }}</a></li>
+                    {% endfor %}
+                </ul>
+            </div>
             <div class="total">总价：<em>16.80元</em></div>
             <div class="operate_btn">
                 <a href="javascript:;" class="buy_btn">立即购买</a>
@@ -78,7 +86,8 @@
     </div>
 {% endblock %}
 
-{% block bottom %}<div class="add_jump"></div>{% endblock %}
+{% block bottom %}
+    <div class="add_jump"></div>{% endblock %}
 
 {% block bottomfiles %}
     <script type="text/javascript" src="js/jquery-1.12.2.js"></script>
