@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-# coding: utf-8
 from django.shortcuts import render, redirect, reverse
 from django.views.generic import View
 from .models import User, Address
