@@ -5,6 +5,7 @@ from ..goods.models import GoodsSKU
 from django_redis import get_redis_connection
 
 
+# Ajax发起的请求都在后台,在浏览器中看不到效果
 # /cart/add
 class CartAddView(View):
     # 购物车记录添加
@@ -69,8 +70,11 @@ class CartAddView(View):
         # hset->如果sku_id已经存在,更新数据,如果sku_id不存在,添加数据
         con.hset(cart_key, sku_id, count)
 
+        # 计算用户购物车商品的条目数
+        total_count = con.hlen(cart_key)
         # 返回应答
         return JsonResponse({
             'res': 5,
+            'total_count': total_count,
             'message': '添加成功'
         })
