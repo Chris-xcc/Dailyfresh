@@ -170,17 +170,17 @@ class UserInfoView(LoginRequiredMixin, View):
 
         goods_li = []
         for iD in sku_ids:
-            goods = GoodsSKU.objects.filter(id=iD)
+            goods = GoodsSKU.objects.get(id=iD)
             goods_li.append(goods)
 
         context = {
             'page': 'user',
             'address': address,
-            'goods_li': goods_li
+            'goods_li': goods_li,
         }
 
         # 除了你给模板文件传递模板变量之外,django会把request.user也传给模板文件
-        return render(request, 'user_center_info.html', context=context)
+        return render(request, 'user_center_info.html', context)
 
 
 class UserOrderView(LoginRequiredMixin, View):

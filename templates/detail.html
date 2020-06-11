@@ -4,11 +4,11 @@
 
 {% block main_content %}
     <div class="breadcrumb">
-        <a href="#">全部分类</a>
+        <a href="{% url 'goods:index' %}">全部分类</a>
         <span>></span>
-        <a href="#">{{ sku.type.name }}</a>
+        <a href="{% url 'goods:list' sku.type.id 1 %}">{{ sku.type.name }}</a>
         <span>></span>
-        <a href="#">商品详情</a>
+        <a href="">商品详情</a>
     </div>
 
     <div class="goods_detail_con clearfix">
@@ -37,7 +37,7 @@
                     {% endfor %}
                 </ul>
             </div>
-            <div class="total">总价：<em>16.80元</em></div>
+            <div class="total">总价：<em>16.1111111111180元</em></div>
             <div class="operate_btn">
                 {% csrf_token %}
                 <a href="javascript:;" class="buy_btn">立即购买</a>

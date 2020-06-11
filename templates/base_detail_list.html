@@ -11,7 +11,7 @@
                 <span></span>
                 <ul class="subnav">
                     {% for type in types %}
-                        <li><a href="{% url 'goods:list' type.id 1 %}" class="{{ type.logo }}">{{ type.nane }}</a></li>
+                        <li><a href="{% url 'goods:list' type.id 1 %}" class="{{ type.logo }}">{{ type.name }}</a></li>
                     {% endfor %}
                 </ul>
             </div>
