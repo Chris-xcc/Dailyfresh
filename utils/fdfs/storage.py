@@ -33,4 +33,4 @@ class FDFSStorage(Storage):
 
     def url(self, name):
         # 返回访问文件的url路径
-        return 'http://192.168.1.104:8888/' + name
+        return 'http://192.168.2.104:8888/' + name
