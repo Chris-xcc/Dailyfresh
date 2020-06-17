@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import OrderPlaceView, OrderCommitView, OrderPayView, CheckPayView
+from .views import OrderPlaceView, OrderCommitView, OrderPayView, CheckPayView, CommentView
 
 app_name = 'order'
 
@@ -8,4 +8,6 @@ urlpatterns = [
     path('commit', OrderCommitView.as_view(), name='commit'),  # 订单创建
     path('pay', OrderPayView.as_view(), name='pay'),  # 订单支付
     path('check', CheckPayView.as_view(), name='check'),  # 查询交易的结果
+    path('comment/<int:order_id>', CommentView.as_view(), name='comment'),  # 查询交易的结果
+
 ]
