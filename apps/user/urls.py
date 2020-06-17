@@ -13,7 +13,7 @@ urlpatterns = [
     path('logout/', LogoutView.as_view(), name='logout'),  # 登录
 
     path('', UserInfoView.as_view(), name='user'),  # 用户中心-信息页
-    path('order/', UserOrderView.as_view(), name='order'),  # 订单页
+    path('order/<page>', UserOrderView.as_view(), name='order'),  # 订单页
     path('address/', AddressView.as_view(), name='address'),  # 地址页
 
 ]
